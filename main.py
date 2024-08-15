@@ -3,6 +3,7 @@ import datetime
 import streamlit as st
 from dotenv import load_dotenv
 import google.generativeai as gen_ai
+import pytz
 
 # Load environment variables
 load_dotenv()
@@ -15,15 +16,11 @@ st.set_page_config(
 
 GOOGLE_API_KEY = os.getenv("GOOGLE_API_KEY")
 
-
 gen_ai.configure(api_key=GOOGLE_API_KEY)
 model = gen_ai.GenerativeModel('gemini-pro')
 
 def translate_role_for_streamlit(user_role):
-    if user_role == "model":
-        return "assistant"
-    else:
-        return user_role
+    return "assistant" if user_role == "model" else user_role
 
 # Initialize chat session in Streamlit if not already present
 if "chat_session" not in st.session_state:
@@ -32,9 +29,17 @@ if "chat_session" not in st.session_state:
 # Display the chatbot's title on the page
 st.title("🤖 Gemini Pro - ChatBot")
 
-# Function to format timestamps (excluding seconds)
+# Function to format timestamps with timezone conversion
 def format_timestamp():
-    return datetime.datetime.now().strftime("%Y-%m-%d %H:%M")
+    # Get the current time in UTC
+    utc_now = datetime.datetime.now(pytz.utc)
+
+    # Convert UTC time to your desired timezone (e.g., 'Asia/Kolkata')
+    local_tz = pytz.timezone('Asia/Kolkata')
+    local_time = utc_now.astimezone(local_tz)
+
+    # Format the timestamp without seconds
+    return local_time.strftime("%Y-%m-%d %H:%M")
 
 # Define custom CSS for timestamps
 timestamp_style = """
